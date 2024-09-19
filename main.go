@@ -13,16 +13,21 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var (
-	username          string = "root"
+type FormData struct {
+	username          string
 	password          string
 	db                string
 	action            string
 	migrationType     string
 	selectedMigration string
 	confirm           bool
-	directory         string = "./db/migrations"
-)
+	directory         string
+}
+
+var formData = FormData{
+	username:  "root",
+	directory: "./db/migrations/",
+}
 
 func main() {
 	// First step: Collect MySQL credentials and action
@@ -31,17 +36,23 @@ func main() {
 			// Input for MySQL username
 			huh.NewInput().
 				Title("MySQL username").
-				Value(&username),
+				Value(&formData.username).
+				Validate(func(str string) error {
+					if str == "" {
+						return fmt.Errorf("Database name cannot be empty")
+					}
+					return nil
+				}),
 
 			// Input for MySQL password
 			huh.NewInput().
 				Title("MySQL password").
-				Value(&password).EchoMode(huh.EchoModePassword),
+				Value(&formData.password).EchoMode(huh.EchoModePassword),
 
 			// Input for MySQL db name
 			huh.NewInput().
 				Title("Database").
-				Value(&db).
+				Value(&formData.db).
 				Validate(func(str string) error {
 					if str == "" {
 						return fmt.Errorf("Database name cannot be empty")
@@ -57,52 +68,52 @@ func main() {
 					huh.NewOption("migrate", "migrate"),
 					huh.NewOption("upload", "upload"),
 				).
-				Value(&action),
+				Value(&formData.action),
 		),
 	).Run()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if action == "migrate" {
-		// Second step: Collect migration type
-		err = huh.NewForm(
-			huh.NewGroup(
-				// Selection for Migration Type
-				huh.NewSelect[string]().
-					Title("Migration Type").
-					Options(
-						huh.NewOption("schema", "schema"),
-						huh.NewOption("data", "data"),
-						huh.NewOption("both", "both"),
-					).
-					Value(&migrationType),
-			),
-		).Run()
-		if err != nil {
-			log.Fatal(err)
-		}
+	// Second step: Collect migration type
+	err = huh.NewForm(
+		huh.NewGroup(
+			// Selection for Migration Type
+			huh.NewSelect[string]().
+				Title("Migration Type").
+				Options(
+					huh.NewOption("schema", "schema"),
+					huh.NewOption("data", "data"),
+					huh.NewOption("both", "both"),
+				).
+				Value(&formData.migrationType),
+		),
+	).Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	if formData.action == "migrate" {
 		// Third step: Collect destination directory if action is "migrate"
 		err = huh.NewForm(
 			huh.NewGroup(
 				// Input for Destination Directory
 				huh.NewInput().
 					Title("Destination directory").
-					Value(&directory),
+					Value(&formData.directory),
 			),
 		).Run()
 		if err != nil {
 			log.Fatal(err)
 		}
-	} else if action == "upload" {
+	} else if formData.action == "upload" {
 		// Step for upload action: Collect directory and list available migrations
 		err = huh.NewForm(
 			huh.NewGroup(
 				// Input for the directory where migrations are stored
 				huh.NewInput().
 					Title("Migrations directory").
-					Value(&directory),
+					Value(&formData.directory),
 			),
 		).Run()
 		if err != nil {
@@ -110,7 +121,7 @@ func main() {
 		}
 
 		// List all .sql migration files in the provided directory
-		sqlFiles, err := listSQLFiles(directory)
+		sqlFiles, err := listSQLFiles(formData.directory)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -128,7 +139,7 @@ func main() {
 							return
 						}()...,
 					).
-					Value(&selectedMigration),
+					Value(&formData.selectedMigration),
 			),
 		).Run()
 		if err != nil {
@@ -145,19 +156,21 @@ func main() {
 	lastRowStyle := lipgloss.NewStyle().MarginBottom(1)
 
 	diretoryLabel := "Destination:"
-	if action == "upload" {
+	migrationPath := formData.directory
+	if formData.action == "upload" {
 		diretoryLabel = "Source:"
-		directory += strings.Split(selectedMigration, " ")[0]
+		formData.selectedMigration = strings.Split(formData.selectedMigration, " ")[0]
+		migrationPath = formData.directory + formData.selectedMigration
 	}
 
 	// Display the collected information
 	fmt.Println(titleStyle.Render("Migration Information:"))
-	fmt.Printf("%s %s\n", rowStyle.Render("Username:"), valueStyle.Render(username))
-	fmt.Printf("%s %s\n", rowStyle.Render("Password:"), valueStyle.Render(strings.Repeat("*", len(password))))
-	fmt.Printf("%s %s\n", rowStyle.Render("Database:"), valueStyle.Render(db))
-	fmt.Printf("%s %s\n", rowStyle.Render("Action:"), valueStyle.Render(action))
-	fmt.Printf("%s %s\n", rowStyle.Render("Migration Type:"), valueStyle.Render(migrationType))
-	fmt.Println(lastRowStyle.Render(rowStyle.Render(diretoryLabel), valueStyle.Render(directory)))
+	fmt.Printf("%s %s\n", rowStyle.Render("Username:"), valueStyle.Render(formData.username))
+	fmt.Printf("%s %s\n", rowStyle.Render("Password:"), valueStyle.Render(strings.Repeat("*", len(formData.password))))
+	fmt.Printf("%s %s\n", rowStyle.Render("Database:"), valueStyle.Render(formData.db))
+	fmt.Printf("%s %s\n", rowStyle.Render("Action:"), valueStyle.Render(formData.action))
+	fmt.Printf("%s %s\n", rowStyle.Render("Migration Type:"), valueStyle.Render(formData.migrationType))
+	fmt.Println(lastRowStyle.Render(rowStyle.Render(diretoryLabel), valueStyle.Render(migrationPath)))
 
 	fmt.Println("\n")
 
@@ -168,7 +181,7 @@ func main() {
 				Title("Confirm migration?").
 				Affirmative("Confirm!").
 				Negative("Cancel").
-				Value(&confirm),
+				Value(&formData.confirm),
 		),
 	).Run()
 
@@ -176,22 +189,25 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if !confirm {
+	if !formData.confirm {
 		fmt.Println("Action cancelled by the user.")
 		return
 	}
 
 	// Construct and run the mysqldump command
-	if action == "migrate" {
-		err = runMysqldump(username, password, db, migrationType, directory)
+	if formData.action == "migrate" {
+		err = runMysqldump(formData.username, formData.password, formData.db, formData.migrationType, formData.directory)
 		if err != nil {
 			log.Fatalf("Failed to run mysqldump: %v", err)
 		}
 	}
 
 	// Apply the selected migration file
-	if action == "upload" {
-		err = applyMigration(filepath.Join(directory, selectedMigration))
+	if formData.action == "upload" {
+
+		migrationFile := formData.directory + formData.selectedMigration
+
+		err = applyMigration(migrationFile)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -270,8 +286,18 @@ func runMysqldump(username, password, databaseName, migrationType, directory str
 func applyMigration(dumpFile string) error {
 	fmt.Println("Applying migration...")
 
-	// Run the mysql command to import the SQL dump file back into the database
-	cmd := exec.Command("mysql", "-u", username, "-p"+password, db, "-e", fmt.Sprintf("source %s", dumpFile))
+	var cmd *exec.Cmd
+
+	switch formData.migrationType {
+	case "schema":
+		cmd = exec.Command("mysql", "-u", formData.username, "--password="+formData.password, formData.db, "-e", fmt.Sprintf("source %s", dumpFile))
+	case "data":
+		// For data migration, import the SQL dump file
+		cmd = exec.Command("mysql", "-u", formData.username, "--password="+formData.password, formData.db, "<", dumpFile)
+	default:
+		return fmt.Errorf("unknown migration type: %s", formData.migrationType)
+	}
+
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()

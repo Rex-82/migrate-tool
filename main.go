@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/charmbracelet/huh"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
+
+	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
 )
 
 var (
@@ -33,7 +36,7 @@ func main() {
 			// Input for MySQL password
 			huh.NewInput().
 				Title("MySQL password").
-				Value(&password),
+				Value(&password).EchoMode(huh.EchoModePassword),
 
 			// Input for MySQL db name
 			huh.NewInput().
@@ -134,24 +137,37 @@ func main() {
 
 	}
 
-	// Display the collected information
-	fmt.Println("Migration Information:")
-	fmt.Printf("MySQL username: %s\n", username)
-	fmt.Printf("MySQL password: %s\n", password)
-	fmt.Printf("MySQL database: %s\n", db)
-	fmt.Printf("Action: %s\n", action)
-	fmt.Printf("Migration Type: %s\n", migrationType)
-	if action == "migrate" {
-		fmt.Printf("Destination Directory: %s\n", directory)
+	titleStyle := lipgloss.NewStyle().Bold(true).Background(lipgloss.Color("#6666BB")).Padding(0, 1).Margin(1, 0)
+
+	valueStyle := lipgloss.NewStyle().Italic(true).Foreground(lipgloss.Color("#CCCCDD"))
+
+	rowStyle := lipgloss.NewStyle().PaddingLeft(1)
+	lastRowStyle := lipgloss.NewStyle().MarginBottom(1)
+
+	diretoryLabel := "Destination:"
+	if action == "upload" {
+		diretoryLabel = "Source:"
+		directory += strings.Split(selectedMigration, " ")[0]
 	}
+
+	// Display the collected information
+	fmt.Println(titleStyle.Render("Migration Information:"))
+	fmt.Printf("%s %s\n", rowStyle.Render("Username:"), valueStyle.Render(username))
+	fmt.Printf("%s %s\n", rowStyle.Render("Password:"), valueStyle.Render(strings.Repeat("*", len(password))))
+	fmt.Printf("%s %s\n", rowStyle.Render("Database:"), valueStyle.Render(db))
+	fmt.Printf("%s %s\n", rowStyle.Render("Action:"), valueStyle.Render(action))
+	fmt.Printf("%s %s\n", rowStyle.Render("Migration Type:"), valueStyle.Render(migrationType))
+	fmt.Println(lastRowStyle.Render(rowStyle.Render(diretoryLabel), valueStyle.Render(directory)))
+
+	fmt.Println("\n")
 
 	// Confirmation step before proceeding with the action
 	err = huh.NewForm(
 		huh.NewGroup(
 			huh.NewConfirm().
-				Title("Are you sure?").
-				Affirmative("Yes!").
-				Negative("No.").
+				Title("Confirm migration?").
+				Affirmative("Confirm!").
+				Negative("Cancel").
 				Value(&confirm),
 		),
 	).Run()

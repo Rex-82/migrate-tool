@@ -231,11 +231,11 @@ func runMysqldump(username, password, databaseName, migrationType, directory str
 	var dumpCommand string
 	switch migrationType {
 	case "schema":
-		dumpCommand = fmt.Sprintf("mysqldump -u %s -p %s --no-data %s > %s", username, password, databaseName, filePath)
+		dumpCommand = fmt.Sprintf("mysqldump -u %s -password='%s' --no-data %s > %s", username, password, databaseName, filePath)
 	case "data":
-		dumpCommand = fmt.Sprintf("mysqldump -u %s -p %s --no-create-info %s > %s", username, password, databaseName, filePath)
+		dumpCommand = fmt.Sprintf("mysqldump -u %s -password='%s' --no-create-info %s > %s", username, password, databaseName, filePath)
 	case "both":
-		dumpCommand = fmt.Sprintf("mysqldump -u %s -p %s %s > %s", username, password, databaseName, filePath)
+		dumpCommand = fmt.Sprintf("mysqldump -u %s -password='%s' %s > %s", username, password, databaseName, filePath)
 	}
 
 	fmt.Printf("Running command: %s\n", dumpCommand)

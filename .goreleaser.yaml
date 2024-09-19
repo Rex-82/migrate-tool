@@ -1,0 +1,23 @@
+# .goreleaser.yaml
+source:
+  # Whether this pipe is enabled or not.
+  enabled: true
+
+  # Name template of the final archive.
+  #
+  # Default: '{{ .ProjectName }}-{{ .Version }}'.
+  # Templates: allowed.
+  name_template: "{{ .ProjectName }}"
+
+  # Format of the archive.
+  #
+  # Valid formats are: tar, tgz, tar.gz, and zip.
+  #
+  # Default: 'tar.gz'.
+  format: "zip"
+
+  # Prefix.
+  # String to prepend to each filename in the archive.
+  #
+  # Templates: allowed.
+  prefix_template: "{{ .ProjectName }}-{{ .Version }}/"

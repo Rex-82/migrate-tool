@@ -21,3 +21,6 @@ source:
   #
   # Templates: allowed.
   prefix_template: "{{ .ProjectName }}-{{ .Version }}/"
+
+archives:
+  - format: "zip"

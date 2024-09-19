@@ -26,3 +26,6 @@ go.work.sum
 
 # dist dir
 dist/
+
+# todo file
+todo.md

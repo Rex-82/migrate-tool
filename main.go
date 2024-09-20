@@ -31,22 +31,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	switch formData.action {
-	case "migrate":
+	if formData.action == "migrate" {
 		err = GetMigrationType(&formData, theme)
 		if err != nil {
 			log.Fatal(err)
 		}
-	case "upload":
+	}
+	err = GetDirectory(&formData, theme)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if formData.action == "upload" {
+
 		err = GetSelectedMigration(&formData, theme)
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	err = GetDirectory(&formData, theme)
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	err = DisplaySummary(&formData, theme)

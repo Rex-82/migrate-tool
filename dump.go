@@ -44,7 +44,7 @@ func RunMysqldump(username, password, databaseName, migrationType, directory str
 		dumpCommand = fmt.Sprintf("mysqldump -u %s --password='%s' %s > %s", username, password, databaseName, filePath)
 	}
 
-	fmt.Printf("Running command: %s\n", dumpCommand)
+	fmt.Print("Running...\n")
 
 	cmd := exec.Command("sh", "-c", dumpCommand)
 	output, err := cmd.CombinedOutput()

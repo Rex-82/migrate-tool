@@ -64,7 +64,7 @@ func main() {
 
 		}
 
-		err = RunMysqldump(cmd, models.FormData.Username, models.FormData.Password, models.FormData.Db, models.FormData.MigrationType, models.FormData.Directory)
+		err = RunMysqldump(cmd)
 		if err != nil {
 			log.Fatalf("Failed to run mysqldump: %v", err)
 		}

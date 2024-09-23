@@ -2,6 +2,7 @@
 
 package utils
 
-var MYSQL_BIN = "c:\\xampp\\mysql\\bin\\mysql"
+var MYSQL_BIN = "c:\\xampp\\mysql\\bin\\mysql.exe"
+var MYSQLDUMP_BIN = "c:\\xampp\\mysql\\bin\\mysqldump.exe"
 
-var MYSQLDUMP_BIN = "c:\\xampp\\mysql\\bin\\mysqldump"
+var SHELL_CMD = "cmd /C"

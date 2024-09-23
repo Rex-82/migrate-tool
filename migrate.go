@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"migratetool/models"
 	"os"
 	"os/exec"
 )
@@ -18,7 +19,7 @@ func applyMigration(command string, dumpFile string) error {
 
 	defer file.Close()
 
-	cmd = exec.Command(command, "-u", formData.username, "--password="+formData.password, formData.db)
+	cmd = exec.Command(command, "-u", models.FormData.Username, "--password="+models.FormData.Password, models.FormData.Db)
 	cmd.Stdin = file // Redirect the file content to MySQL's stdin
 
 	cmd.Stdout = os.Stdout

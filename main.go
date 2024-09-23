@@ -3,66 +3,56 @@ package main
 import (
 	"fmt"
 	"log"
+	"migratetool/models"
 	"migratetool/utils"
 	"os/exec"
 
 	"github.com/charmbracelet/huh"
 )
 
-type FormData struct {
-	username          string
-	password          string
-	db                string
-	action            string
-	migrationType     string
-	selectedMigration string
-	confirm           bool
-	directory         string
-}
-
-var formData = FormData{
-	username:  "root",
-	directory: "./db/migrations/",
-}
-
 var theme = huh.ThemeDracula()
 
 func main() {
-	err := GetCredentialsAndAction(&formData, theme)
+	err := GetServerInfo(&models.FormData, theme)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if formData.action == "migrate" {
-		err = GetMigrationType(&formData, theme)
+	err = GetCredentialsAndAction(&models.FormData, theme)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if models.FormData.Action == "migrate" {
+		err = GetMigrationType(&models.FormData, theme)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	err = GetDirectory(&formData, theme)
+	err = GetDirectory(models.FormData, theme)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if formData.action == "upload" {
+	if models.FormData.Action == "upload" {
 
-		err = GetSelectedMigration(&formData, theme)
+		err = GetSelectedMigration(models.FormData, theme)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	err = DisplaySummary(&formData, theme)
+	err = DisplaySummary(models.FormData, theme)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if !formData.confirm {
+	if !models.FormData.Confirm {
 		fmt.Println("Action cancelled by the user.")
 		return
 	}
 
-	if formData.action == "migrate" {
+	if models.FormData.Action == "migrate" {
 
 		cmd, err := exec.LookPath("mysqldump")
 		if err != nil {
@@ -74,13 +64,13 @@ func main() {
 
 		}
 
-		err = RunMysqldump(cmd, formData.username, formData.password, formData.db, formData.migrationType, formData.directory)
+		err = RunMysqldump(cmd, models.FormData.Username, models.FormData.Password, models.FormData.Db, models.FormData.MigrationType, models.FormData.Directory)
 		if err != nil {
 			log.Fatalf("Failed to run mysqldump: %v", err)
 		}
-	} else if formData.action == "upload" {
+	} else if models.FormData.Action == "upload" {
 
-		migrationFile := formData.directory + formData.selectedMigration
+		migrationFile := models.FormData.Directory + models.FormData.SelectedMigration
 
 		cmd, err := exec.LookPath("mysql")
 		if err != nil {

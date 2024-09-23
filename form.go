@@ -8,17 +8,18 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 
+	"migratetool/models"
 	"migratetool/utils"
 )
 
-func GetCredentialsAndAction(FormData *FormData, theme *huh.Theme) error {
+func GetCredentialsAndAction(FormData *models.FormDataType, theme *huh.Theme) error {
 
 	return huh.NewForm(
 		huh.NewGroup(
 			// Input for MySQL username
 			huh.NewInput().
 				Title("MySQL username").
-				Value(&formData.username).
+				Value(&models.FormData.Username).
 				Validate(func(str string) error {
 					if str == "" {
 						return fmt.Errorf("Database name cannot be empty")
@@ -29,12 +30,12 @@ func GetCredentialsAndAction(FormData *FormData, theme *huh.Theme) error {
 			// Input for MySQL password
 			huh.NewInput().
 				Title("MySQL password").
-				Value(&formData.password).EchoMode(huh.EchoModePassword),
+				Value(&models.FormData.Password).EchoMode(huh.EchoModePassword),
 
 			// Input for MySQL db name
 			huh.NewInput().
 				Title("Database").
-				Value(&formData.db).
+				Value(&models.FormData.Db).
 				Validate(func(str string) error {
 					if str == "" {
 						return fmt.Errorf("Database name cannot be empty")
@@ -50,12 +51,12 @@ func GetCredentialsAndAction(FormData *FormData, theme *huh.Theme) error {
 					huh.NewOption("migrate", "migrate"),
 					huh.NewOption("upload", "upload"),
 				).
-				Value(&formData.action),
+				Value(&models.FormData.Action),
 		),
 	).WithTheme(theme).Run()
 }
 
-func GetMigrationType(formData *FormData, theme *huh.Theme) error {
+func GetMigrationType(FormData *models.FormDataType, theme *huh.Theme) error {
 
 	return huh.NewForm(
 		huh.NewGroup(
@@ -67,16 +68,16 @@ func GetMigrationType(formData *FormData, theme *huh.Theme) error {
 					huh.NewOption("data", "data"),
 					huh.NewOption("both", "both"),
 				).
-				Value(&formData.migrationType),
+				Value(&models.FormData.MigrationType),
 		),
 	).WithTheme(theme).Run()
 }
 
-func GetDirectory(formData *FormData, theme *huh.Theme) error {
+func GetDirectory(FormData models.FormDataType, theme *huh.Theme) error {
 
 	var actionTitle string
 
-	switch formData.action {
+	switch models.FormData.Action {
 	case "migrate":
 		actionTitle = "Destination directory"
 	case "upload":
@@ -88,7 +89,7 @@ func GetDirectory(formData *FormData, theme *huh.Theme) error {
 		huh.NewGroup(
 			huh.NewInput().
 				Title(actionTitle).
-				Value(&formData.directory),
+				Value(&models.FormData.Directory),
 		),
 	).WithTheme(theme).Run()
 
@@ -96,14 +97,14 @@ func GetDirectory(formData *FormData, theme *huh.Theme) error {
 		return err
 	}
 
-	formData.directory = utils.PathFormat(formData.directory)
+	models.FormData.Directory = utils.PathFormat(models.FormData.Directory)
 
 	return nil
 }
 
-func GetSelectedMigration(formData *FormData, theme *huh.Theme) error {
+func GetSelectedMigration(FormData models.FormDataType, theme *huh.Theme) error {
 
-	sqlFiles, err := utils.ListFiles(formData.directory, ".sql")
+	sqlFiles, err := utils.ListFiles(models.FormData.Directory, ".sql")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,12 +122,12 @@ func GetSelectedMigration(formData *FormData, theme *huh.Theme) error {
 						return
 					}()...,
 				).
-				Value(&formData.selectedMigration),
+				Value(&models.FormData.SelectedMigration),
 		),
 	).WithTheme(theme).Run()
 }
 
-func DisplaySummary(FormData *FormData, theme *huh.Theme) error {
+func DisplaySummary(FormData models.FormDataType, theme *huh.Theme) error {
 
 	titleStyle := lipgloss.NewStyle().Bold(true).Background(lipgloss.Color("#8D63C9")).Padding(0, 1).Margin(1, 0).Width(32).AlignHorizontal(lipgloss.Center)
 
@@ -136,21 +137,23 @@ func DisplaySummary(FormData *FormData, theme *huh.Theme) error {
 	lastRowStyle := lipgloss.NewStyle()
 
 	diretoryLabel := "Destination:"
-	migrationPath := formData.directory
+	migrationPath := models.FormData.Directory
 
-	if formData.action == "upload" {
+	if models.FormData.Action == "upload" {
 		diretoryLabel = "Source:"
-		formData.selectedMigration = strings.Split(formData.selectedMigration, " ")[0]
-		migrationPath = formData.directory + formData.selectedMigration
+		models.FormData.SelectedMigration = strings.Split(models.FormData.SelectedMigration, " ")[0]
+		migrationPath = models.FormData.Directory + models.FormData.SelectedMigration
 	}
 
 	// Display the Geted information
 	fmt.Println(titleStyle.Render("Migration Information"))
-	fmt.Printf("%s %s\n", rowStyle.Render("Username:"), valueStyle.Render(formData.username))
-	fmt.Printf("%s %s\n", rowStyle.Render("Password:"), valueStyle.Render(strings.Repeat("*", len(formData.password))))
-	fmt.Printf("%s %s\n", rowStyle.Render("Database:"), valueStyle.Render(formData.db))
-	fmt.Printf("%s %s\n", rowStyle.Render("Action:"), valueStyle.Render(formData.action))
-	fmt.Printf("%s %s\n", rowStyle.Render("Migration Type:"), valueStyle.Render(formData.migrationType))
+	fmt.Printf("%s %s\n", rowStyle.Render("Host:"), valueStyle.Render(models.FormData.Host))
+	fmt.Printf("%s %s\n", rowStyle.Render("Port:"), valueStyle.Render(models.FormData.Port))
+	fmt.Printf("%s %s\n", rowStyle.Render("Username:"), valueStyle.Render(models.FormData.Username))
+	fmt.Printf("%s %s\n", rowStyle.Render("Password:"), valueStyle.Render(strings.Repeat("*", len(models.FormData.Password))))
+	fmt.Printf("%s %s\n", rowStyle.Render("Database:"), valueStyle.Render(models.FormData.Db))
+	fmt.Printf("%s %s\n", rowStyle.Render("Action:"), valueStyle.Render(models.FormData.Action))
+	fmt.Printf("%s %s\n", rowStyle.Render("Migration Type:"), valueStyle.Render(models.FormData.MigrationType))
 	fmt.Println(lastRowStyle.Render(rowStyle.Render(diretoryLabel), valueStyle.Render(migrationPath)))
 
 	fmt.Println("\n")
@@ -162,7 +165,7 @@ func DisplaySummary(FormData *FormData, theme *huh.Theme) error {
 				Title("Confirm migration?").
 				Affirmative("Confirm").
 				Negative("Cancel").
-				Value(&formData.confirm),
+				Value(&models.FormData.Confirm),
 		),
 	).WithTheme(theme).Run()
 }

@@ -31,7 +31,7 @@ func RunMysqldump(command, username, password, databaseName, migrationType, dire
 	}
 
 	// Full path of the dump file
-	filePath := fmt.Sprintf("%s/%s", directory, fileName)
+	filePath := fmt.Sprintf("%s%s", directory, fileName)
 
 	// Construct the mysqldump command based on the migration type
 	var dumpCommand string

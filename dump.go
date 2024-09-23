@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func RunMysqldump(username, password, databaseName, migrationType, directory string) error {
+func RunMysqldump(command, username, password, databaseName, migrationType, directory string) error {
 
 	err := utils.EnsureDirExists(directory)
 	if err != nil {
@@ -37,11 +37,11 @@ func RunMysqldump(username, password, databaseName, migrationType, directory str
 	var dumpCommand string
 	switch migrationType {
 	case "schema":
-		dumpCommand = fmt.Sprintf("mysqldump -u %s --password='%s' --no-data %s > %s", username, password, databaseName, filePath)
+		dumpCommand = fmt.Sprintf("%s -u %s --password='%s' --no-data %s > %s", command, username, password, databaseName, filePath)
 	case "data":
-		dumpCommand = fmt.Sprintf("mysqldump -u %s --password='%s' --no-create-info %s > %s", username, password, databaseName, filePath)
+		dumpCommand = fmt.Sprintf("%s -u %s --password='%s' --no-create-info %s > %s", command, username, password, databaseName, filePath)
 	case "both":
-		dumpCommand = fmt.Sprintf("mysqldump -u %s --password='%s' %s > %s", username, password, databaseName, filePath)
+		dumpCommand = fmt.Sprintf("%s -u %s --password='%s' %s > %s", command, username, password, databaseName, filePath)
 	}
 
 	fmt.Print("Running...\n")

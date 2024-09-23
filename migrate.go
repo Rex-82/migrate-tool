@@ -6,7 +6,7 @@ import (
 	"os/exec"
 )
 
-func applyMigration(dumpFile string) error {
+func applyMigration(command string, dumpFile string) error {
 	fmt.Println("Applying migration...")
 
 	var cmd *exec.Cmd
@@ -18,7 +18,7 @@ func applyMigration(dumpFile string) error {
 
 	defer file.Close()
 
-	cmd = exec.Command("mysql", "-u", formData.username, "--password="+formData.password, formData.db)
+	cmd = exec.Command(command, "-u", formData.username, "--password="+formData.password, formData.db)
 	cmd.Stdin = file // Redirect the file content to MySQL's stdin
 
 	cmd.Stdout = os.Stdout

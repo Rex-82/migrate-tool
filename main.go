@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"migratetool/utils"
+	"os/exec"
 
 	"github.com/charmbracelet/huh"
 )
@@ -61,7 +63,18 @@ func main() {
 	}
 
 	if formData.action == "migrate" {
-		err = RunMysqldump(formData.username, formData.password, formData.db, formData.migrationType, formData.directory)
+
+		cmd, err := exec.LookPath("mysqldump")
+		if err != nil {
+			cmd, err = exec.LookPath(utils.MYSQLDUMP_BIN)
+			if err != nil {
+				log.Fatalf("Command 'mysqldump' not found at: %v", utils.MYSQLDUMP_BIN)
+			}
+			fmt.Printf(cmd)
+
+		}
+
+		err = RunMysqldump(cmd, formData.username, formData.password, formData.db, formData.migrationType, formData.directory)
 		if err != nil {
 			log.Fatalf("Failed to run mysqldump: %v", err)
 		}
@@ -69,7 +82,17 @@ func main() {
 
 		migrationFile := formData.directory + formData.selectedMigration
 
-		err = applyMigration(migrationFile)
+		cmd, err := exec.LookPath("mysql")
+		if err != nil {
+			cmd, err = exec.LookPath(utils.MYSQL_BIN)
+			if err != nil {
+				log.Fatalf("Command 'mysql' not found at: %v", utils.MYSQL_BIN)
+			}
+			fmt.Printf(cmd)
+
+		}
+
+		err = applyMigration(cmd, migrationFile)
 		if err != nil {
 			log.Fatal(err)
 		}

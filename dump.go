@@ -46,7 +46,7 @@ func RunMysqldump(command, username, password, databaseName, migrationType, dire
 
 	fmt.Print("Running...\n")
 
-	cmd := exec.Command(utils.SHELL_CMD, dumpCommand)
+	cmd := exec.Command(utils.SHELL_CMD, utils.SHELL_CMD_ARG, dumpCommand)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("command execution failed: %v, output: %s", err, output)

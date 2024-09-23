@@ -19,7 +19,7 @@ func applyMigration(command string, dumpFile string) error {
 
 	defer file.Close()
 
-	cmd = exec.Command(command, "-u", models.FormData.Username, "--password="+models.FormData.Password, models.FormData.Db)
+	cmd = exec.Command(command, "-u", models.FormData.Username, "--password="+models.FormData.Password, "-h", models.FormData.Host, "-P", models.FormData.Port, models.FormData.Db)
 	cmd.Stdin = file // Redirect the file content to MySQL's stdin
 
 	cmd.Stdout = os.Stdout

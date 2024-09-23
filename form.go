@@ -12,6 +12,35 @@ import (
 	"migratetool/utils"
 )
 
+func GetServerInfo(FormData *models.FormDataType, theme *huh.Theme) error {
+
+	return huh.NewForm(
+		huh.NewGroup(
+			// Input for server host
+			huh.NewInput().
+				Title("Host").
+				Value(&models.FormData.Host).
+				Validate(func(str string) error {
+					if str == "" {
+						return fmt.Errorf("Host name cannot be empty")
+					}
+					return nil
+				}),
+
+			// Input for host port
+			huh.NewInput().
+				Title("Port").
+				Value(&models.FormData.Port).
+				Validate(func(str string) error {
+					if str == "" {
+						return fmt.Errorf("Port cannot be empty")
+					}
+					return nil
+				}),
+		),
+	).WithTheme(theme).Run()
+}
+
 func GetCredentialsAndAction(FormData *models.FormDataType, theme *huh.Theme) error {
 
 	return huh.NewForm(

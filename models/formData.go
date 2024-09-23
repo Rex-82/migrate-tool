@@ -1,6 +1,8 @@
 package models
 
 type FormDataType struct {
+	Host              string
+	Port              string
 	Username          string
 	Password          string
 	Db                string
@@ -12,6 +14,8 @@ type FormDataType struct {
 }
 
 var FormData = FormDataType{
+	Host:      "localhost",
+	Port:      "3306",
 	Username:  "root",
 	Directory: "./db/migrations/",
 }

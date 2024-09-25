@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"migratetool/models"
 	"migratetool/utils"
+	"os"
 	"os/exec"
 	"time"
 )
@@ -50,6 +51,7 @@ func RunMysqldump(command string) error {
 	cmd := exec.Command(utils.SHELL_CMD, utils.SHELL_CMD_ARG, dumpCommand)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		os.Remove(fmt.Sprintf("%s%s", models.FormData.Directory, fileName))
 		return fmt.Errorf("command execution failed: %v, output: %s", err, output)
 	}
 

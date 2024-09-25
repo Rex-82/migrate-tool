@@ -28,7 +28,16 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		switch models.FormData.MigrationType {
+		case "schema":
+			models.FormData.Directory += "schema/"
+		case "data":
+			models.FormData.Directory += "data/"
+		}
+
 	}
+
 	err = GetDirectory(models.FormData, theme)
 	if err != nil {
 		log.Fatal(err)
